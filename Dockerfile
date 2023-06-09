@@ -1,12 +1,19 @@
-# Используем официальный образ OpenJDK 17 для сборки
+# Базовый образ
 FROM openjdk:17 as builder
 
-# Устанавливаем рабочую директорию в Docker
+# Перейти в рабочую директорию
 WORKDIR /workspace/app
 
-# Копируем Gradle файлы в рабочую директорию
+# Копирование gradlew
 COPY gradlew .
+
+# Изменение прав на исполнение для gradlew
+RUN chmod +x ./gradlew
+
+# Копирование директории gradle
 COPY gradle gradle
+
+# Копирование файла build.gradle
 COPY build.gradle .
 
 # Загрузка зависимостей для повторного использования слоя Docker
@@ -15,16 +22,18 @@ RUN ./gradlew dependencies
 # Копируем исходный код приложения
 COPY src src
 
-# Сборка приложения
-RUN ./gradlew bootJar
+# Сборка приложения и удаление ненужных файлов
+RUN ./gradlew build -x test
+RUN mkdir -p build/dependency && (cd build/dependency; jar -xf ../libs/*.jar)
 
-# Следующая стадия в многостадийной сборке Docker
-FROM openjdk:17 as production
+# Минимальный образ
+FROM openjdk:17-jdk-alpine
 
-ARG DEPENDENCY=/workspace/app/build/libs
+ARG DEPENDENCY=/workspace/app/build/dependency
 
-# Копируем jar файл в контейнер
-COPY --from=builder ${DEPENDENCY}/*.jar app.jar
+# Копируем зависимости
+COPY --from=builder ${DEPENDENCY}/BOOT-INF/lib /app/lib
+COPY --from=builder ${DEPENDENCY}/META-INF /app/META-INF
+COPY --from=builder ${DEPENDENCY}/BOOT-INF/classes /app
 
-# Запускаем приложение
-ENTRYPOINT ["java","-jar","/app.jar"]
+ENTRYPOINT ["java","-cp","app:app/lib/*","com.example.demo.DemoApplication"]
