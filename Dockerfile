@@ -16,6 +16,9 @@ COPY gradle gradle
 # Копирование файла build.gradle
 COPY build.gradle .
 
+# Установка утилиты xargs
+RUN apk add --no-cache findutils
+
 # Загрузка зависимостей для повторного использования слоя Docker
 RUN ./gradlew dependencies
 
