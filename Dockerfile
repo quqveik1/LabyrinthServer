@@ -19,7 +19,7 @@ COPY src src
 RUN ./gradlew bootJar
 
 # Следующая стадия в многостадийной сборке Docker
-FROM openjdk:17-jre-slim as production
+FROM openjdk:17-jre as production
 
 ARG DEPENDENCY=/workspace/app/build/libs
 
