@@ -1,42 +1,14 @@
-# Базовый образ
-FROM openjdk:17 as builder
+# Используем базовый образ с Java
+FROM openjdk:11-jdk-slim
 
-# Перейти в рабочую директорию
-WORKDIR /workspace/app
+# Добавляем в контейнер переменные окружения
+ENV APP_HOME=/usr/app/
 
-# Копирование gradlew
-COPY gradlew .
+# Создаем директорию приложения внутри Docker образа
+WORKDIR $APP_HOME
 
-# Изменение прав на исполнение для gradlew
-RUN chmod +x ./gradlew
+# Копируем файлы сборки в Docker образ
+COPY build/libs/*.jar app.jar
 
-# Копирование директории gradle
-COPY gradle gradle
-
-# Копирование файла build.gradle
-COPY build.gradle .
-
-# Установка утилиты xargs
-RUN apk add --no-cache findutils
-
-# Загрузка зависимостей для повторного использования слоя Docker
-RUN ./gradlew dependencies
-
-# Копируем исходный код приложения
-COPY src src
-
-# Сборка приложения и удаление ненужных файлов
-RUN ./gradlew build -x test
-RUN mkdir -p build/dependency && (cd build/dependency; jar -xf ../libs/*.jar)
-
-# Минимальный образ
-FROM openjdk:17-jdk-alpine
-
-ARG DEPENDENCY=/workspace/app/build/dependency
-
-# Копируем зависимости
-COPY --from=builder ${DEPENDENCY}/BOOT-INF/lib /app/lib
-COPY --from=builder ${DEPENDENCY}/META-INF /app/META-INF
-COPY --from=builder ${DEPENDENCY}/BOOT-INF/classes /app
-
-ENTRYPOINT ["java","-cp","app:app/lib/*","com.example.demo.DemoApplication"]
+# Команда для запуска нашего Spring Boot приложения внутри Docker контейнера
+ENTRYPOINT ["java","-jar","app.jar"]
