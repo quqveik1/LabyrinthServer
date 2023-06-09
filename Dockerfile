@@ -1,5 +1,5 @@
 # Используем официальный образ OpenJDK 17 для сборки
-FROM openjdk:17-jdk as builder
+FROM openjdk:17 as builder
 
 # Устанавливаем рабочую директорию в Docker
 WORKDIR /workspace/app
@@ -19,7 +19,7 @@ COPY src src
 RUN ./gradlew bootJar
 
 # Следующая стадия в многостадийной сборке Docker
-FROM openjdk:17-jre as production
+FROM openjdk:17 as production
 
 ARG DEPENDENCY=/workspace/app/build/libs
 
