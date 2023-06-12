@@ -5,14 +5,16 @@ FROM gradle:6.9.1-jdk17 AS build
 WORKDIR /home/gradle/src
 
 # Копирование gradle.properties и build.gradle
-
 COPY build.gradle .
+COPY settings.gradle .
+COPY gradlew .
+COPY gradlew.bat .
 
 # Копирование исходного кода
 COPY src ./src
 
 # Сборка приложения
-RUN gradle clean build --no-daemon
+RUN gradle clean build --no-daemon --stacktrace
 
 # Стадия запуска
 FROM openjdk:17-jdk-oracle
