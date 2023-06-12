@@ -14,7 +14,7 @@ COPY gradlew.bat .
 COPY src ./src
 
 # Сборка приложения
-RUN gradle clean build --no-daemon --stacktrace
+RUN gradle clean build --no-daemon --info --debug
 
 # Стадия запуска
 FROM openjdk:17-jdk-oracle
