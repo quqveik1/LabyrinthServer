@@ -5,7 +5,7 @@ FROM gradle:6.9.1-jdk17 AS build
 WORKDIR /home/gradle/src
 
 # Копирование gradle.properties и build.gradle
-COPY gradle.properties .
+
 COPY build.gradle .
 
 # Копирование исходного кода
