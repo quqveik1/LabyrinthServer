@@ -1,5 +1,5 @@
 # Стадия сборки
-FROM gradle:7.0.2-jdk17 AS build
+FROM gradle:6.9.1-jdk17 AS build
 
 # Установка рабочего каталога в контейнере
 WORKDIR /home/gradle/src
@@ -15,7 +15,7 @@ COPY src ./src
 RUN gradle clean build --no-daemon
 
 # Стадия запуска
-FROM openjdk:17-jdk
+FROM openjdk:17-jdk-oracle
 
 # Копирование исполняемого jar-файла в рабочую директорию "/app" контейнера
 COPY --from=build /home/gradle/src/build/libs/*.jar /app/app.jar
