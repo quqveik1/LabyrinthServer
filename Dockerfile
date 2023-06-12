@@ -1,29 +1,24 @@
-# Stage 1: Build the application
-FROM gradle:6.9.1-jdk11 AS builder
+# Стадия сборки
+FROM gradle:7.0.2-jdk17 AS build
 
-# Set the working directory
-WORKDIR /app
+# Установка рабочего каталога в контейнере
+WORKDIR /home/gradle/src
 
-# Copy the build.gradle and settings.gradle files
-COPY build.gradle settings.gradle ./
+# Копирование gradle.properties и build.gradle
+COPY gradle.properties .
+COPY build.gradle .
 
-# Copy the src directory
+# Копирование исходного кода
 COPY src ./src
 
-# Build the application
-RUN gradle clean build
+# Сборка приложения
+RUN gradle clean build --no-daemon
 
-# Stage 2: Create the final image
-FROM openjdk:11-jre-slim
+# Стадия запуска
+FROM openjdk:17-jdk
 
-# Set the working directory
-WORKDIR /app
+# Копирование исполняемого jar-файла в рабочую директорию "/app" контейнера
+COPY --from=build /home/gradle/src/build/libs/*.jar /app/app.jar
 
-# Copy the built JAR file from the previous stage
-COPY --from=builder /app/build/libs/*.jar app.jar
-
-# Expose the application port
-EXPOSE 8080
-
-# Define the command to run the application
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Команда для запуска приложения
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]
